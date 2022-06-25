@@ -10,7 +10,7 @@ kafka = {
 
 sql_conf = {
     "driver": 'ODBC Driver 17 for SQL Server',
-    "server": 'tcp:'+os.environ.get("SQL_SERVER_HOST")+','+os.environ.get("SQL_SERVER_PORT"),
+    "server": 'tcp:' + os.environ.get("SQL_SERVER_HOST") + ',' + os.environ.get("SQL_SERVER_PORT"),
     "database": os.environ.get("SQL_DATABASE"),
     "username": os.environ.get("DATABASE_USERNAME"),
     "password": os.environ.get("DATABASE_PASS"),

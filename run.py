@@ -9,16 +9,16 @@ import json
 r = Redis(host=redis_conf["host"], port=redis_conf["port"], db=0)
 
 consumer = KafkaConsumer(
-    topics["rtst_topic"],
-    bootstrap_servers=kafka_config["server"]+":"+kafka_config["port"],
+    kafka["topic"],
+    bootstrap_servers=kafka_config["server"] + ":" + kafka_config["port"],
     auto_offset_reset="earliest",
     enable_auto_commit=True,
-    group_id=topics["rtst_topic"] + '__group033',
+    group_id=kafka["topic"] + '__group033',
     value_deserializer=lambda x: json.loads(x.decode('utf-8'))
 )
 
 producer = KafkaProducer(
-    bootstrap_servers=kafka_config["server"]+":"+kafka_config["port"],
+    bootstrap_servers=kafka_config["server"] + ":" + kafka_config["port"],
     value_serializer=lambda x: json.dumps(x).encode('utf-8')
 )
 
