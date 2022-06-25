@@ -4,12 +4,13 @@ import pyodbc
 from redis import Redis
 import time
 from pathlib import Path
+import json
 
-r = Redis(host="172.31.70.21", port=6379, db=0)
+r = Redis(host=redis_conf["host"], port=redis_conf["port"], db=0)
 
 consumer = KafkaConsumer(
     topics["rtst_topic"],
-    bootstrap_servers=['172.31.70.22:9092'],
+    bootstrap_servers=kafka_config["server"]+":"+kafka_config["port"],
     auto_offset_reset="earliest",
     enable_auto_commit=True,
     group_id=topics["rtst_topic"] + '__group033',
@@ -17,7 +18,7 @@ consumer = KafkaConsumer(
 )
 
 producer = KafkaProducer(
-    bootstrap_servers=['172.31.70.22:9092'],
+    bootstrap_servers=kafka_config["server"]+":"+kafka_config["port"],
     value_serializer=lambda x: json.dumps(x).encode('utf-8')
 )
 
@@ -132,7 +133,7 @@ def make_documents_from_msg(cleaned_msg):
 def send_producer(documented_msg):
     if producer:
         print(documented_msg)
-        producer.send('ledger-09-08', documented_msg)
+        producer.send(kafka["producer"], documented_msg)
 
 
 def write_to_json(msg_json, file_name):
@@ -143,8 +144,6 @@ def write_to_json(msg_json, file_name):
     with open(path_to_save, "w") as f:
         json.dump(msg_json, f)
 
-
-# print(consumer.topics())
 
 for msg in consumer:
     if msg is None:
