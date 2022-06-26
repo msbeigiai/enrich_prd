@@ -4,3 +4,4 @@ data/
 .idea
 requirements.txt
 Dockerfile
+test.py

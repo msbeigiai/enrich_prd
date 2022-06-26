@@ -80,7 +80,7 @@ def fetch_store_name(msg_without_store_name):
             msg_without_store_name["STORE"] = "Unknown"
         else:
             r.set(store_id, str(value[0]))
-            msg_without_store_name["CUSTACCOUNT"] = value[0]
+            msg_without_store_name["STORE"] = value[0]
 
 
 def fetch_custom_number(msg_without_custom_number):
@@ -102,7 +102,6 @@ def fetch_custom_number(msg_without_custom_number):
                     "ON c.PARTY = d.RECID " \
                     "WHERE c.ACCOUNTNUM = '%s'" % custom_account
             cursor.execute(query)
-            print(msg_without_custom_number["TRANSACTIONID"])
             value = cursor.fetchone()
 
             if value is [] or value is None:
