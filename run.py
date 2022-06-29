@@ -112,13 +112,21 @@ def fetch_custom_number(msg_without_custom_number):
 
 
 def fetch_header(msg_without_header, transaction_id):
-    query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r" \
-            " WHERE r.TRANSACTIONID = '%s'" % transaction_id
-    cursor.execute(query)
-    temp = cursor.fetchone()
-    header_items = [item for item in temp]
-    msg_without_header["PAYMENTAMOUNT"] = float(header_items[0])
-    msg_without_header["CREATEDDATETIME"] = str(header_items[1])
+    get_header_items = r.lrange(transaction_id, 0, -1)
+
+    if get_header_items is not None and get_header_items is not '' and len(get_header_items) != 0:
+        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[1])
+        msg_without_header["CREATEDDATETIME"] = str(get_header_items[0].decode('utf-8'))
+    else:
+        query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r" \
+                " WHERE r.TRANSACTIONID = '%s'" % transaction_id
+        cursor.execute(query)
+        temp = cursor.fetchone()
+        header_items = [item for item in temp]
+        for item in header_items:
+            r.lpush(transaction_id, str(item))
+        msg_without_header["PAYMENTAMOUNT"] = float(header_items[0])
+        msg_without_header["CREATEDDATETIME"] = str(header_items[1])
 
 
 def make_documents_from_msg(cleaned_msg):
