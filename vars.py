@@ -5,6 +5,7 @@ load_dotenv()
 
 kafka = {
     "topic": os.environ.get("KAFKA_TOPIC"),
+    "topic_2": os.environ.get("KAFKA_TOPIC_2"),
     "producer": os.environ.get("KAFKA_PRODUCER")
 }
 
