@@ -118,7 +118,7 @@ def fetch_header(msg_without_header, transaction_id):
     get_header_items = r_header.lrange(transaction_id, 0, -1)
 
     if get_header_items is not None and get_header_items is not '' and len(get_header_items) != 0:
-        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[0])
+        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[0].decode('utf-8'))
         msg_without_header["CREATEDDATETIME"] = str(get_header_items[1].decode('utf-8'))
     else:
         query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r" \
