@@ -5,6 +5,8 @@ from redis import Redis
 import time
 from pathlib import Path
 import json
+from time import sleep
+
 
 r = Redis(host=redis_conf["host"], port=redis_conf["port"], db=0)
 r_header = Redis(host=redis_conf["host"], port=redis_conf["port"], db=1)
@@ -47,6 +49,8 @@ def fetch_name_alias(msg_without_name_alias):
         query = "select i.NAMEALIAS FROM RETAILTRANSACTIONSALESTRANS r " \
                 "INNER JOIN INVENTTABLE i " \
                 "ON i.ITEMID = '%s'" % item_id
+
+        sleep(3.0)
         cursor.execute(query)
         value = cursor.fetchone()[0]
         msg_without_name_alias["ITEMID"] = value
@@ -118,8 +122,8 @@ def fetch_header(msg_without_header, transaction_id):
     get_header_items = r_header.lrange(transaction_id, 0, -1)
 
     if get_header_items is not None and get_header_items is not '' and len(get_header_items) != 0:
-        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[0].decode('utf-8'))
-        msg_without_header["CREATEDDATETIME"] = str(get_header_items[1].decode('utf-8'))
+        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[1].decode('utf-8'))
+        msg_without_header["CREATEDDATETIME"] = str(get_header_items[0].decode('utf-8'))
     else:
         query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r" \
                 " WHERE r.TRANSACTIONID = '%s'" % transaction_id
