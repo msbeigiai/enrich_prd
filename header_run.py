@@ -41,6 +41,7 @@ for msg in consumer:
 
     if check_if_exist is False:
         set_value(msg["after"])
+    print(msg["after"])
 
 
 
