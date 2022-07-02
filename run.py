@@ -7,13 +7,16 @@ from pathlib import Path
 import json
 
 r = Redis(host=redis_conf["host"], port=redis_conf["port"], db=0)
+r_header = Redis(host=redis_conf["host"], port=redis_conf["port"], db=1)
+r_store = Redis(host=redis_conf["host"], port=redis_conf["port"], db=2)
+r_custom = Redis(host=redis_conf["host"], port=redis_conf["port"], db=3)
 
 consumer = KafkaConsumer(
     kafka["topic"],
     bootstrap_servers=kafka_config["server"] + ":" + kafka_config["port"],
     auto_offset_reset="earliest",
     enable_auto_commit=True,
-    group_id=kafka["topic"] + '__group033',
+    group_id=kafka["topic"] + '__group_RTST',
     value_deserializer=lambda x: json.loads(x.decode('utf-8'))
 )
 
@@ -62,7 +65,7 @@ def fetch_net_price(msg_without_net_price):
 
 def fetch_store_name(msg_without_store_name):
     store_id = msg_without_store_name["STORE"]
-    store_name = r.get(store_id)
+    store_name = r_store.get(store_id)
 
     if store_name:
         msg_without_store_name["STORE"] = store_name.decode('utf-8')
@@ -79,7 +82,7 @@ def fetch_store_name(msg_without_store_name):
         if value is [] or value is None:
             msg_without_store_name["STORE"] = "Unknown"
         else:
-            r.set(store_id, str(value[0]))
+            r_store.set(store_id, str(value[0]))
             msg_without_store_name["STORE"] = value[0]
 
 
@@ -90,7 +93,7 @@ def fetch_custom_number(msg_without_custom_number):
         msg_without_custom_number["CUSTACCOUNT"] = "Unknown"
 
     else:
-        custom_phone_number = r.get(custom_account)
+        custom_phone_number = r_custom.get(custom_account)
 
         if custom_phone_number is not None and custom_phone_number is not '':
             msg_without_custom_number["CUSTACCOUNT"] = custom_phone_number.decode('utf-8')
@@ -107,16 +110,16 @@ def fetch_custom_number(msg_without_custom_number):
             if value is [] or value is None:
                 msg_without_custom_number["CUSTACCOUNT"] = "Unknown"
             else:
-                r.set(custom_account, str(value[0]))
+                r_custom.set(custom_account, str(value[0]))
                 msg_without_custom_number["CUSTACCOUNT"] = value[0]
 
 
 def fetch_header(msg_without_header, transaction_id):
-    get_header_items = r.lrange(transaction_id, 0, -1)
+    get_header_items = r_header.lrange(transaction_id, 0, -1)
 
     if get_header_items is not None and get_header_items is not '' and len(get_header_items) != 0:
-        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[1])
-        msg_without_header["CREATEDDATETIME"] = str(get_header_items[0].decode('utf-8'))
+        msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[0])
+        msg_without_header["CREATEDDATETIME"] = str(get_header_items[1].decode('utf-8'))
     else:
         query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r" \
                 " WHERE r.TRANSACTIONID = '%s'" % transaction_id
@@ -127,6 +130,8 @@ def fetch_header(msg_without_header, transaction_id):
             r.lpush(transaction_id, str(item))
         msg_without_header["PAYMENTAMOUNT"] = float(header_items[0])
         msg_without_header["CREATEDDATETIME"] = str(header_items[1])
+        # msg_without_header["PAYMENTAMOUNT"] = "NO"
+        # msg_without_header["CREATEDDATETIME"] = "NO"
 
 
 def make_documents_from_msg(cleaned_msg):

@@ -11,7 +11,7 @@ consumer = KafkaConsumer(
     bootstrap_servers=kafka_config["server"] + ":" + kafka_config["port"],
     auto_offset_reset="earliest",
     enable_auto_commit=True,
-    group_id=kafka["topic"] + '__group033',
+    group_id=kafka["topic_2"] + '__group_RTT',
     value_deserializer=lambda x: json.loads(x.decode('utf-8'))
 )
 
