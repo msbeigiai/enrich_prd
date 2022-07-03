@@ -46,11 +46,10 @@ def fetch_name_alias(msg_without_name_alias):
         msg_without_name_alias["ITEMID"] = name_alias.decode('utf-8')
 
     elif name_alias is None:
-        query = "select i.NAMEALIAS FROM RETAILTRANSACTIONSALESTRANS r " \
-                "INNER JOIN INVENTTABLE i " \
-                "ON i.ITEMID = '%s'" % item_id
+        query = "select i.NAMEALIAS FROM INVENTTABLE i WITH(NOLOCK) " \
+                "WHERE i.ITEMID = '%s'" % item_id
 
-        sleep(3.0)
+        # sleep(3.0)
         cursor.execute(query)
         value = cursor.fetchone()[0]
         msg_without_name_alias["ITEMID"] = value
@@ -76,8 +75,9 @@ def fetch_store_name(msg_without_store_name):
 
     else:
         query = "select c.NAME " \
-                f"from RETAILCHANNELTABLE a inner join OMOPERATINGUNITVIEW b " \
-                f"on a.OMOPERATINGUNITID = b.RECID inner join DIRPARTYTABLE c " \
+                f"from RETAILCHANNELTABLE a WITH(NOLOCK)" \
+                f" inner join OMOPERATINGUNITVIEW b WITH(NOLOCK) " \
+                f"on a.OMOPERATINGUNITID = b.RECID inner join DIRPARTYTABLE c WITH(NOLOCK)" \
                 "ON c.PARTYNUMBER = b.PARTYNUMBER where a.STORENUMBER = '%s'" % store_id
 
         cursor.execute(query)
@@ -104,8 +104,8 @@ def fetch_custom_number(msg_without_custom_number):
 
         else:
             # print(f"{custom_account}")
-            query = "SELECT d.NAMEALIAS FROM DIRPARTYTABLE d " \
-                    "INNER JOIN CUSTTABLE c " \
+            query = "SELECT d.NAMEALIAS FROM DIRPARTYTABLE d WITH(NOLOCK) " \
+                    "INNER JOIN CUSTTABLE c WITH(NOLOCK) " \
                     "ON c.PARTY = d.RECID " \
                     "WHERE c.ACCOUNTNUM = '%s'" % custom_account
             cursor.execute(query)
@@ -125,8 +125,9 @@ def fetch_header(msg_without_header, transaction_id):
         msg_without_header["PAYMENTAMOUNT"] = float(get_header_items[1].decode('utf-8'))
         msg_without_header["CREATEDDATETIME"] = str(get_header_items[0].decode('utf-8'))
     else:
-        query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r" \
+        query = "SELECT r.PAYMENTAMOUNT, r.CREATEDDATETIME FROM RETAILTRANSACTIONTABLE r WITH(NOLOCK) " \
                 " WHERE r.TRANSACTIONID = '%s'" % transaction_id
+        sleep(2)
         cursor.execute(query)
         temp = cursor.fetchone()
         header_items = [item for item in temp]
